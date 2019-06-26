@@ -78,6 +78,7 @@ def confirm_changes():
 
 def write_changes():
     print("\n\n writing changes")
+<<<<<<< HEAD
     bs1 = subprocess.call(["sed","-i","s/background-color:.*/background-color: "+str(newColor.val)+";/",str(bannerFile.val)],shell=True)
     SearchStr="\<span class\=security_banner\>"
     bannerText = os.popen("echo \""+str(bannerText.val)+"\" | sed \"s/\\//\\\\\\//g\"").read().rstrip("\n")
@@ -85,6 +86,15 @@ def write_changes():
         subprocess.call(["sed","-i","s/<span class=security_banner>.*<\/span>/<span class=security_banner>"+str(bannerText.val)+"<\/span>/",Str(Glob(str(htmlFilesLoc.val)+"/*.html"))],shell=True)
     else:
         subprocess.call(["sed","-i","s/<strong>.*<\/strong>/<strong><span class=security_banner>"+str(bannerText.val)+"<\/span><\/strong>/",Str(Glob(str(htmlFilesLoc.val)+"/*.html"))],shell=True)
+=======
+    bs1 = subprocess.call(["sed","-i","s/background-color:.*/background-color: "+str(NEW_COLOR.val)+";/",str(BANNER_FILE.val)],shell=True)
+    SearchStr="\<span class\=security_banner\>"
+    bannerText = os.popen("echo \""+str(BANNER_TEXT.val)+"\" | sed \"s/\\//\\\\\\//g\"").read().rstrip("\n")
+    if (int(os.popen("grep -c \""+str(SEARCH_STR.val)+"\" \""+str(INDEX_FILE.val)+"\"").read().rstrip("\n")) >= 1 ):
+        subprocess.call(["sed","-i","s/<span class=security_banner>.*<\/span>/<span class=security_banner>"+str(BANNER_TEXT.val)+"<\/span>/",Str(Glob(str(HTML_FILES_LOC.val)+"/*.html"))],shell=True)
+    else:
+        subprocess.call(["sed","-i","s/<strong>.*<\/strong>/<strong><span class=security_banner>"+str(BANNER_TEXT.val)+"<\/span><\/strong>/",Str(Glob(str(HTML_FILES_LOC.val)+"/*.html"))],shell=True)
+>>>>>>> 08f920a630c3b7a3cbffae5e04683f4fd3f399b8
 
 #####################################
 # run everything
