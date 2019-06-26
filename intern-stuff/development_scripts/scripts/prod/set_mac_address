@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# James Stoup
+# 18 APR 2018
+
+# Must be run as root or with sudo!
+
+
+OLD_MAC=""
+NEW_MAC=""
+TIMESTAMP=`date +%F_%T`
+
+
+# root check
+if [ "$EUID" -ne 0 ];  then 
+    echo "Please run as root"
+    exit
+fi
+
+
+# Fix the rules file
+fix_rules() {
+
+    RULES_DIR=/etc/udev/rules.d
+    RULES_FILE=$RULES_DIR/70-persistent-net.rules
+
+    echo ""
+    echo "== Setting New MAC Address ==="
+
+    # backup rules just in case
+    cp "$RULES_FILE" "$RULES_FILE.$TIMESTAMP"
+
+    # the newest mac address will get set to eth1
+    OLD_MAC=`grep eth0 $RULES_FILE | tail -1 | cut -d "," -f4 | cut -d "=" -f3 | tr -d "\""`
+    NEW_MAC=`grep eth1 $RULES_FILE | tail -1 | cut -d "," -f4 | cut -d "=" -f3 | tr -d "\""`
+
+    echo "OLD MAC ADDRESS: $OLD_MAC"
+    echo "NEW MAC ADDRESS: $NEW_MAC"
+    echo ""
+
+    # set eth0 to the new mac
+    sed -E -i "s/${OLD_MAC}/${NEW_MAC}/" ${RULES_FILE}
+
+    # finally strip out the eth1 line since it is no longer needed
+    grep -v eth1 $RULES_FILE | head -n -1 > $RULES_FILE.tmp
+    mv $RULES_FILE.tmp $RULES_FILE
+
+    echo "Updating : $RULES_FILE"
+    echo "eth0 MAC : $NEW_MAC"
+}
+
+
+# fix network script
+fix_network() {
+
+    echo ""
+    echo "=== Fixing Network Script ==="
+
+    CFG_FILE=/etc/sysconfig/network-scripts/ifcfg-eth0
+
+    # backup rules just in case
+    cp "$CFG_FILE" "$CFG_FILE.$TIMESTAMP"
+
+    # strip out the old, replace with the new
+    echo "Replacing old MAC address with new one"
+    grep -vi HWADDR $CFG_FILE > $CFG_FILE.tmp
+    mv $CFG_FILE.tmp $CFG_FILE
+    echo "HWADDR=$NEW_MAC" >> $CFG_FILE
+}
+
+
+goodbye() {
+    echo "This system is now setup for DHCP using the new MAC Address."
+    echo "To complete this setup please restart the system now."
+}
+
+
+fix_rules
+fix_network
+goodbye
