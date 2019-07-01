@@ -3,11 +3,12 @@
 import os
 import sys
 import glob
+import subprocess
 def main():
 
     #check for root permissions
     if os.geteuid() == 0:
-        print("Runnin as root.")
+        print("Running as root.")
     else:
         sys.exit("This script must be run as root!")
 
@@ -50,7 +51,7 @@ def main():
         NEW_COLOR = "gray"
     
     #enter the new text
-    BANNER_TEXT = input("Enter the banner: ")
+    BANNER_TEXT = str(input("Enter the banner text: "))
     
     #confirm changes
     #check for correct input
@@ -69,17 +70,19 @@ def main():
             break
 
     #write changes
-    
-    ##WRITE CODE HERE
+    print("Writing changes")
+
+    #change background color
+    subprocess.call("sed -i 's/background-color.*/background-color: $NEW_COLOR;/' $BANNER_FILE")
+
+    #change banner text
+    SEARCH_STR = "\<span class\=security_banner\>"
+    BANNER_TEXT = subprocess.call("echo $BANNER_TEXT | sed 's/\//\\\//g'")
+
+    if(int(subprocess.call("grep -c '$SEARCH_STR' '$INDEX_FILE'"))>=1):
+        subprocess.call("sed -i 's/<span class=security_banner>.*<\/span>/<span class=security_banner>$BANNER_TEXT<\/span>/' $HTML_FILES_LOC/*.html")
+    else:
+        subprocess.call("sed -i 's/<strong>.*<\/strong>/<strong><span class=security_banner>$BANNER_TEXT<\/span><\/strong>/' $HTML_FILES_LOC/8.html")
 
 if __name__ == "__main__":
     main()
-
-    
-
-    
-    
-
-
-
-
