@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>ION - God Page</title>
+
+    <link rel="stylesheet" href="css/dropzone.css" type="text/css" />
+    <link rel="stylesheet" href="css/banner.css" />
+    <link rel="stylesheet" href="css/manage.css" />
+    <link rel="stylesheet" href="css/jquery-ui.css" />
+    <link rel="stylesheet" href="css/jquery-ui-timepicker-addon.css" />
+    <link rel="stylesheet" href="css/bender.css" />
+    <link rel="stylesheet" href="css/publisher.css" />
+    <link rel="stylesheet" href="css/uploadfile.min.css" />
+    <link rel="stylesheet" href="css/smart_wizard.css" />
+    <link rel="stylesheet" href="css/facebook.css" />
+    <link rel="stylesheet" href="css/third-party/alertify.css" />
+    <link rel="stylesheet" href="css/third-party/jtable_basic.css" />
+    <link rel="stylesheet" href="css/third-party/jtable_metro_base.css" />
+    <link rel="stylesheet" href="css/third-party/jtable.css" />
+
+    <style>
+      fieldset {
+        vertical-align: bottom;
+        margin: 0;
+        box-sizing: border-box;
+      }
+    </style>
+    <link rel="shortcut icon" href="img/favicon.ico">
+
+    <script type="text/javascript" src="js/lib/jquery.js"></script>
+    <script type="text/javascript" src="js/lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/lib/alertify.js"></script>
+    <script type="text/javascript" src="js/manage.js"></script>
+    <script type="text/javascript" src="js/dropzone.js"></script>
+    <script type="text/javascript" src="js/lib/tiny_mce/tiny_mce.js"></script>
+    <script type="text/javascript" src="js/jquery.form.js"></script>
+    <script type="text/javascript" src="js/jquery.uploadfile.js"></script>
+    <script type="text/javascript" src="js/lib/jquery-ui-timepicker-addon.js"></script>
+
+    <script src="js/lib/require.js" data-main="js/gp/config.js"></script>
+
+    <script type="text/javascript">
+      Dropzone.autoDiscover = false;
+
+      Array.prototype.clean = function(deleteValue) {
+        for(var i = 0; i < this.length; i++) {
+          if(this[i] === deleteValue) {
+            this.splice(i, 1);
+            i--;
+          }
+        }
+        return this;
+      };
+
+      Array.prototype.clean = function(deleteValue) {
+        for(var i = 0; i < this.length; i++) {
+          if(this[i] === deleteValue) {
+            this.splice(i, 1);
+            i--;
+          }
+        }
+        return this;
+      };
+
+      $(document).ready(function() {
+        $('#vi-viewcount').spinner({
+          min: 0,
+          max: 9999999
+        }).spinner('value', 0);
+
+        $.ajax({
+          url: "rest/ifs/exercises",
+          type: 'GET',
+          cache: false,
+          success: function(data) {
+            $.each(data.exercises, function(i) {
+              var val = data.exercises[i].name;
+              if(val !== 'WHITE-NOISE' && val !== 'CURRENT-EVENTS') {
+                $("#upload-exercise-select").append($("<option/>").attr("value", val).text(val));
+                $("#fb-exercise-select").append($("<option/>").attr("value", val).text(val));
+              }
+              $("#logging-exercise-select").append($("<option/>").attr("value", val).text(val));
+              $("#exercise-creation-exercise-select").append($("<option/>").attr("value", val).text(val));
+              $("#from-exercise-select").append($("<option/>").attr("value", val).text(val));
+              $("#to-exercise-select").append($("<option/>").attr("value", val).text(val));
+            });
+          }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+          alertify.alert("Failed to load exercises");
+        });
+
+        $('#my-awesome-dropzone').dropzone({
+          paramName: "file", // The name that will be used to transfer the file
+          maxFilesize: 500, // MB
+          acceptedFiles: ".zip, .pdf, .ppt, .pptx, .doc, .docx, application/octet-stream, video/*",
+          addRemoveLinks: true,
+          uploadMultiple: true,
+          parallelUploads: 100,
+          autoProcessQueue: false,
+          dictRemoveFile: 'Remove',
+          url: "rest/upload/",
+          accept: function(file, done) {
+            done();
+          },
+          sending: function(file, xhr, formData) {
+            if(file.type.match("video/[a-z0-9A-Z]+")) { //match all video formats
+              var title = $('#vi-title').val().trim(),
+                      category = $('#vi-category-select').find(':selected').val(),
+                      user = $('#vi-user').val().trim(),
+                      desc = $('#vi-desc').val().trim(),
+                      keywords = $('#vi-keywords').val().split(' ').clean(""),
+                      created = $('#vi-created').datetimepicker('getDate').getTime(),
+                      viewcount = $('#vi-viewcount').val();
+
+              var mediaData = {
+                category: category,
+                description: desc,
+                user: user,
+                title: title,
+                keywords: keywords,
+                created: created,
+                viewcount: viewcount
+              };
+              formData.append("mediaData", JSON.stringify(mediaData));
+            }
+          },
+          error: function(file, message) {
+            var node, _i, _len, _ref, _results;
+            if(file.previewElement) {
+              file.previewElement.classList.add("dz-error");
+              _ref = file.previewElement.querySelectorAll("[data-dz-errormessage]");
+              _results = [];
+              for(_i = 0, _len = _ref.length; _i < _len; _i++) {
+                node = _ref[_i];
+                _results.push(node.textContent = "Failed to upload file");
+              }
+              return _results;
+            }
+          }
+        });
+
+        var dz = Dropzone.forElement("#my-awesome-dropzone");
+        dz.on("addedfile", function(file) {
+          if(file.type.match("video/[a-z0-9A-Z]+")) {
+            dz.options.maxFiles = 1;
+            $('#vi-created').datetimepicker({
+              controlType: 'select',
+              oneLine: true,
+              timeFormat: 'hh:mm tt'
+            });
+            $('#video-info').show();
+          } else {
+            dz.options.acceptedFiles = dz.options.acceptedFiles.replace(", video/*", "");
+          }
+        });
+        dz.on("removedfile", function() {
+          dz.options.maxFiles = null;
+          if(dz.files.length === 0 && !dz.options.acceptedFiles.contains("video/*")) {
+            dz.options.acceptedFiles = dz.options.acceptedFiles.concat(", video/*");
+          }
+        });
+
+        $('#vi-save').click(function() {
+          $('#video-info').hide();
+        });
+
+        $('#vi-cancel').click(function() {
+          $('#video-info').hide();
+          $('#video-info').find('input').val('');
+          dz.removeAllFiles();
+        });
+
+        var uploadObj = $("#fileuploader").uploadFile({
+          url: "rest/upload",
+          method: "POST",
+          autoSubmit: false,
+          filename: "myfile"
+        });
+
+        var exercise;
+
+        $('#upload-exercise-select').on('change', function(e) {
+          exercise = $(this).val();
+          Dropzone.forElement("#my-awesome-dropzone").options.url = "rest/upload/" + exercise;
+        });
+        $('#remove-all-btn').on('click', function() {
+          dz.removeAllFiles();
+        });
+        $('#upload-btn').on('click', function() {
+          var myDropzone = Dropzone.forElement("#my-awesome-dropzone");
+          var fileuploader = document.getElementById("fileuploader");
+          if(fileuploader) {
+            uploadObj.update({
+              url: "rest/upload/" + exercise
+            });
+            $("." + uploadObj.formGroup).each(function(i, items) {
+              if($(this).is('form')) {
+                var what = $(this);
+                what.get(0).action = "rest/upload/" + exercise;
+              }
+            });
+            uploadObj.startUpload();
+          } else {
+            myDropzone.processQueue();
+          }
+        });
+
+        // Added to allow bending of facebook and youtube entries for an exercise or exercises
+        $("#from-exercise-select").on('change', function() {
+          var from = this.value;
+          var to = $("#to-exercise-select").val();
+          if(to !== "" && from !== "") {
+            if(to === from) {
+              $("#new-bend-overwrite-div").show(500);
+              $("#overwriteid").prop("checked", true);
+              $("#appendId").prop("checked", false);
+              $("#new-bend-append-div").hide(100);
+            } else {
+              $("#new-bend-overwrite-div").hide(100);
+              $("#overwriteid").prop("checked", false);
+              $("#appendId").prop("checked", true);
+              $("#new-bend-append-div").show(500);
+            }
+          }
+        });
+
+        $("#to-exercise-select").on('change', function() {
+          var to = this.value;
+          var from = $("#from-exercise-select").val();
+          if(from !== "") {
+            if(to === from) {
+              $("#new-bend-overwrite-div").show(500);
+              $("#overwriteid").prop("checked", true);
+              $("#appendId").prop("checked", false);
+              $("#new-bend-append-div").hide(100);
+            } else {
+              $("#new-bend-overwrite-div").hide(100);
+              $("#overwriteid").prop("checked", false);
+              $("#appendId").prop("checked", true);
+              $("#new-bend-append-div").show(500);
+            }
+          }
+        });
+      });
+    </script>
+
+    <script>
+      $(function() {
+        $("#menu").tabs();
+        $("#facebook #fb-menu").tabs({disabled: [1, 2, 3]});
+      });
+    </script>
+    <script type="text/javascript">
+      <!--
+        //used to convert images to base64 for json objects
+      File.prototype.convertToBase64 = function(callback) {
+        var FR = new FileReader();
+        FR.onload = function(e) {
+          callback(e.target.result);
+        };
+        FR.readAsDataURL(this);
+      }
+-->
+    </script>
+  </head>
+  <body>
+    <div class="banner banner-top">
+      This information system is approved for <strong>UNCLASSIFIED</strong>
+    </div>
+    <div class="header">
+      <div class="container">
+        <figure class="logo">
+          <img src="img/logo.png" alt="">
+        </figure>
+        <span id="logout">Log Out</span>
+        <span id="archive-oetsc"><a href="/archive/ion-browser/oetscmanage.html">Archive God Panel</a></span>
+        <span id="pupanel"><a href="manage.html">Power User</a></span>
+        <span id="supanel"><a href="sumanage.html">Super User</a></span>
+      </div>
+    </div>
+    <div id="video-info">
+      <div class="vi-header">Video Information</div>
+      <div class="vi-body">
+        <label>Title:</label><input id="vi-title" type="text" /><br /> 
+        <label>Category:</label>
+        <span class="exercise-dropdown" style="margin-left:-5px;margin-top:2px;">
+          <select id="vi-category-select">
+            <option>Auto &amp; Vehicles</option>
+            <option>Beauty &amp; Fashion</option>
+            <option>Comedy</option>
+            <option>Education</option>
+            <option>Entertainment</option>
+            <option>Family Entertainment</option>
+            <option>Film &amp; Animation</option>
+            <option>Food</option>
+            <option>Gaming</option>
+            <option>How-to &amp; Style</option>
+            <option>Music</option>
+            <option>News &amp; Politics</option>
+            <option>Nonprofits &amp; Activism</option>
+            <option>People &amp; Blogs</option>
+            <option>Pets &amp; Animals</option>
+            <option>Science &amp; Technology</option>
+            <option>Sports</option>
+            <option>Travel &amp; Events</option>
+          </select>
+        </span><br /> 
+        <label>User:</label><input id="vi-user" type="text" /><br /> 
+        <label>Keywords:</label><input id="vi-keywords" type="text" /><br /> 
+        <label>Description:</label><input id="vi-desc" type="text" /><br /> 
+        <label>View Count:</label><input id="vi-viewcount" type="text" style="width: 70px;" class="time-spinner" /><br /> 
+        <label>Created:</label><input id="vi-created" type="text" /> 
+        <!-- <input id="vi-use-current" type="checkbox" style="margin: 5px; width: 100px;"><span>Use current time</span><br /> <br /> -->
+        <div class="buttons">
+          <button id="vi-save" class="ion-btn">Save</button>
+          <button id="vi-cancel" class="ion-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="max-width:100%">
+      <h1 style="margin-left:30px;">ION God Panel</h1>
+
+      <div id="menu">
+        <ul>
+          <li style="background:#a7b197;" class="tab active"><a href="#upload">File Management</a></li>
+          <li style="background:#a7b197;" class="tab"><a id="publishTab" href="#publish">Twitter</a></li>
+          <li style="background:#a7b197;" class="tab"><a id="bendTab" href="#bend">Twitter Bender</a></li>
+          <li style="background:#a7b197;" class="tab"><a id="facebookTab" href="#facebook">Facebook</a></li>
+          <li style="background:#a7b197;" class="tab"><a id="exerciseReuseTab" href="#exerciseReuse">Exercise Reuse</a></li>
+          <li style="background:#a7b197;" class="tab"><a id="articleManagerTab" href="#articlemanager">News Articles</a></li>
+          <li style="background:#6a7056;" class="tab"><a id="exerciseManagerTab" href="#exercisemanager">Exercise Manager</a></li>
+          <li style="background:#6a7056;" class="tab"><a id="siteManagerTab" href="#sitemanager">Site Manager</a></li>
+          <li style="background:#373d23" class="tab"><a id="liveUpdateTab" href="#live">Control</a></li>
+          <li style="background:#373d23" class="tab"><a id="loggingTab" href="#logging">Logging</a></li>
+          <img height="32" id="tabloader" alt="" src="img/wait.gif" style="padding-top:4px;padding-left:5px;display:none;" />
+        </ul>
+
+        <div id="upload">
+          <div class="sub-page-container">
+            <div class="exercise-dropdown-container">
+              <span class="dropdown-label">Exercise: </span>
+              <span class="exercise-dropdown"> 
+                <select id="upload-exercise-select">
+                  <option value="" selected="selected"></option>
+                  <option value="ALL">YOUTUBE WHITE NOISE</option>
+                </select>
+              </span>
+            </div>
+            <form class="dropzone" id="my-awesome-dropzone">
+              <div class="fallback">
+                <div id="fileuploader">Select File</div>
+              </div>
+            </form>
+            <ul class="info">
+              <li>Only documents(.pdf, .doc, .ppt, etc.) and videos may
+                be uploaded from here.</li>
+              </li>
+              <li>One video may be uploaded at a time.</li>
+            </ul>
+            <span class="upload-button" style="float:right;">
+              <button class="ion-btn" id="upload-btn">Upload</button>
+              <button class="ion-btn" id="remove-all-btn" style="margin-right:5px;">Remove All</button>
+            </span>
+            <div id="ifs-maint-div" class="halfpage-container"></div>
+            <div id="youtube-maint-div" class="halfpage-container"></div>
+          </div>
+        </div>
+
+        <div id="publish">
+          <div class="page-width-region">
+            <div class="sub-page-container">
+              <div id="publish-exercise-container"></div>
+              <div id='publish-data-source-container'></div>
+              <div id='publish-tweets-container' class='edit-exercise-container'></div>
+              <div id='publish-pages-view-container'></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="facebook">
+          <div class="page-width-region">
+            <div class="sub-page-container">
+              <span class="exercise-descriptor">Exercise:</span>
+              <span class="exercise-dropdown" style="margin-bottom:8px;">
+                <select id="fb-exercise-select">
+                  <option selected=""></option>
+                  <option value="ALL">FB WHITE NOISE</option>
+                </select>
+              </span>
+              <span id="fb-exercise-loader" style="display:none;">
+                <img alt="" height="33" src="img/wait.gif" style="margin-bottom:5px;padding-left:15px;"/>
+              </span>
+              <div id="fb-menu">
+                <ul>
+                  <li class="tab active"><a href="#fb-users">Users</a></li>
+                  <li class="tab"><a href="#fb-posts">Posts</a></li>
+                  <li class="tab"><a href="#fb-friends">Friends</a></li>
+                </ul>
+                <div id="fb-users">
+                  <div class="page-width-region">
+                    <div class="sub-page-container"></div>
+                  </div>
+                </div>
+                <div id="fb-posts">
+                  <div class="page-width-region">
+                    <div class="sub-page-container"></div>
+                  </div>
+                </div>
+                <div id="fb-friends">
+                  <div class="page-width-region">
+                    <div class="sub-page-container"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="articlemanager">
+          <div class="page-width-region">
+            <div class="sub-page-container">
+              <div class="edit-exercise-container">
+                <div id="article-selector"></div>                      
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="exercisemanager">
+          <div class="page-width-region">
+            <div class="sub-page-container">
+              <div class="edit-exercise-container">
+                <div id="exercise-creation"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="live">
+          <div class="sub-page-container" id="su-subpage">
+            <div id="image-upload" class="halfpage-container"></div>
+            <div id="website-image-upload" class="halfpage-container"></div>
+            <div id="exercise-upload" class="halfpage-container"></div>
+            <div id="exercise-create" class="halfpage-container"></div>
+            <div id="zip-template" class="halfpage-container"></div>
+            <div id="zip-download" class="halfpage-container"></div>
+            <div id="passcode-update" class="halfpage-container"></div>
+            <div id="article-populate" class="halfpage-container"></div>
+            <div id="solr-maint-div" class="halfpage-container"></div>
+            <div id="article-reindex-div" class="halfpage-container"></div>
+            <div id="reindex-page-div" class="halfpage-container"></div>
+            <div id="import-wrapper" class="halfpage-container"></div>
+          </div>
+        </div>
+
+        <div id="bend">
+          <div class="page-width-region">
+            <div class="sub-page-container">
+              <div id="exercise-container"></div>
+              <div id="edit-exercise-container"></div>
+              <div id="data-source-selector-container"></div>
+              <div id="data-source-stats-container"></div>
+              <div id="data-bending-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="exerciseReuse">
+          <div class="sub-page-container">
+            <div class="exercise-dropdown-container">
+              <span class="dropdown-label">Select From Exercise: </span>
+              <span class="exercise-dropdown">
+                <select id="from-exercise-select">
+                  <option value="" selected="selected"></option>
+                  <option value="ALL">FB/YT White Noise</option>
+                </select>
+              </span> 
+              <span class="dropdown-label">Select To Exercise: </span>
+              <span class="exercise-dropdown">
+                <select id="to-exercise-select">
+                  <option value="" selected="selected"></option>
+                  <option value="ALL">FB/YT White Noise</option>
+                </select>
+              </span> 
+            </div>
+            <div id="new-bend-append-div" style="display:none;">
+              <span class="fb-radio-label">Append to / Overwrite Exercise :</span>
+              <span><input class="fb-user-level" type="radio" name="reuse" value="append" id="appendId">Append</span>
+              <span><input class="fb-user-level" type="radio" name="reuse" value="overwrite" id="overwriteId">Overwrite</span>
+            </div>
+            <div id="new-bend-overwrite-div" style="display:none;">
+              <span class="fb-radio-label">Exercise data will be overwritten</span>
+            </div>
+            <div id="exerciseReuseGroupPick"></div>
+            <div id="exerciseReuseFacebookFromDate" style="display:none;"></div>
+            <div id="exerciseReuseYouTubeFromDate" style="display:none;"></div>
+            <div id="exerciseReuseTwitterFromDate" style="display:none;"></div>
+            <div id="exerciseReuseNewsFromDate" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div id="sitemanager">
+          <div class="page-width-region">
+            <div class="sub-page-container">
+              <div class="edit-exercise-container">
+                <div id="site-creation"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="logging">
+          <div class="page-width-region">
+            <div class="sub-page-container">
+              <span class="exercise-descriptor">Exercise:</span>
+              <span class="exercise-dropdown" style="margin-bottom:8px;">
+                <select id="logging-exercise-select">
+                  <option selected=""></option>
+                  <option value="ALL">ALL EXERCISES</option>
+                </select>
+              </span>            
+              <span id="logging-exercise-loader" style="display:none;">
+                <img alt="" height="33" src="img/wait.gif" style="margin-bottom:5px;padding-left:15px;"/>
+              </span>
+              <div id="logging-wrapper"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-------------------------------------------------------------------->
+    <!--              WARNING! DO NOT CHANGE THIS FORMATTING            -->
+    <!-------------------------------------------------------------------->
+    <div id="versioning-info">
+      <div>
+        <span class="version-desc">Version:</span>
+	  <span id="ion-version-number">1.5.2</span>
+      </div>
+      <div>
+        <span class="version-desc">Hash:</span>
+	  <span id="ion-version-hash">d5578971629afde47f4b88c6b8089bd5664f3659</span>
+      </div>
+      <div>
+        <span class="version-desc">Date Built:</span>
+	  <span id="ion-version-date">2019-05-29 12:03:57 --- (2019-05-29 16:03:57 UTC)</span>
+      </div>
+    </div>
+    <!-------------------------------------------------------------------->
+
+
+    <div class="banner banner-bottom">
+      This information system is approved for <strong>UNCLASSIFIED</strong>
+    </div>
+  </body>
+</html>
