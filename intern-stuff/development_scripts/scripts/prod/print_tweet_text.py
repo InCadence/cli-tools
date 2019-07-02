@@ -22,4 +22,4 @@ def main():
 
     os.chdir(str(EXERCISE))
 
-    subprocess.call(["sed -e 's/[{}]/''g' *.json | awk -v k= 'text' '{n=split($0,a,','); for (i=1; i<=n; i++) print a[i]} | grep $COL_NAME"], shell = True)
+    subprocess.call(["sed -e 's/[{}]/''g' *.json | awk -v k= 'text' '{n=split($0,a,','); for (i=1; i<=n; i++) print a[i]} | grep", COL_NAME], shell = True)
