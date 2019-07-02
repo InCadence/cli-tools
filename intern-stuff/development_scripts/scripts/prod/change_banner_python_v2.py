@@ -73,16 +73,16 @@ def main():
     print("Writing changes")
 
     #change background color
-    subprocess.call("sed -i 's/background-color.*/background-color: $NEW_COLOR;/' $BANNER_FILE")
+    subprocess.call(["sed -i 's/background-color.*/background-color: $NEW_COLOR;/' $BANNER_FILE"])
 
     #change banner text
     SEARCH_STR = "\<span class\=security_banner\>"
-    BANNER_TEXT = subprocess.call("echo $BANNER_TEXT | sed 's/\//\\\//g'")
+    BANNER_TEXT = subprocess.call(["echo $BANNER_TEXT | sed 's/\//\\\//g'"])
 
-    if(int(subprocess.call("grep -c '$SEARCH_STR' '$INDEX_FILE'"))>=1):
-        subprocess.call("sed -i 's/<span class=security_banner>.*<\/span>/<span class=security_banner>$BANNER_TEXT<\/span>/' $HTML_FILES_LOC/*.html")
+    if(int(subprocess.call(["]grep -c '$SEARCH_STR' '$INDEX_FILE'"]))>=1):
+        subprocess.call(["sed -i 's/<span class=security_banner>.*<\/span>/<span class=security_banner>$BANNER_TEXT<\/span>/' $HTML_FILES_LOC/*.html"])
     else:
-        subprocess.call("sed -i 's/<strong>.*<\/strong>/<strong><span class=security_banner>$BANNER_TEXT<\/span><\/strong>/' $HTML_FILES_LOC/8.html")
+        subprocess.call(["sed -i 's/<strong>.*<\/strong>/<strong><span class=security_banner>$BANNER_TEXT<\/span><\/strong>/' $HTML_FILES_LOC/8.html"])
 
 if __name__ == "__main__":
     main()
