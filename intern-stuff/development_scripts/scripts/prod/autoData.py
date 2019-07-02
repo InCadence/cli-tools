@@ -26,7 +26,7 @@ if(os.path.isfile(LOCK_FILE)):
 
     if int(FILE_AGE) < int(MAX_LOCKFILE_AGE):
         exit(1)
-    subprocess.call("rm LOCK_FILE", shell = True)
+    subprocess.call(["rm LOCK_FILE"], shell = True)
     else:
         DATE = datetime.datetime.now
         print("lockfile created at ",DATE," ", LOCK_FILE)
