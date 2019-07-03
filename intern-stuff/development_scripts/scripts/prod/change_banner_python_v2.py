@@ -63,11 +63,15 @@ def main():
     while True:
         print("1. Continue \n2. Quit\n")
         choice = int(input())
-        if choice < "1" or choice >"2":
-            print("Please choose: ")
-            continue
+        if choice < 1 or choice > 2:
+            print("Please enter a valid selection")
         else:
             break
+    if choice == 2:
+        exit(1)
+
+
+
 
     #write changes
     print("Writing changes")
