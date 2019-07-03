@@ -11,7 +11,7 @@ import os
 def main():
 
     #gets path from user
-    path = input("Enter the path: ")
+    path = str(input("Enter the path surrounded by quotes (\"p/a/t/h...\"): "))
 
     #loops through the directory and removes any files of size 0
     for root, dirs, files in os.walk(path):
@@ -21,5 +21,5 @@ def main():
                 print("removing ", filename)
                 os.remove(filename)
 
-if __name__ = "__main__":
+if __name__ == "__main__":
     main()
