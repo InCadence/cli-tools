@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 
+# Script for changing color and txt of security banners 
+# Changes banners loacted here: 
+# /opt/glassfish4/glassfish/domains.ion.applications/ion-browser-<version>/css/banner.css
+# The text for theb anner will asl get changed in every html file that has a banner 
+# which can be found: 
+# /opt/glassfish4/glassfish/domains/ion/applicaitons/ion-browswer-<version>
+
 import os
 import sys
-import glob
-import subprocess
+import fileinput
+import re
 def main():
 
     #check for root permissions
@@ -13,13 +20,13 @@ def main():
         sys.exit("This script must be run as root!")
 
     #define paths
-    BASE_PATH = "opt/glassfish4/domains/ion/applications"
-    BROWSER_PATH = "ion-browser-1.4.0"
+    BASE_PATH = "opt/glassfish4/domains/ion/applications/"
+    BROWSER_PATH = "ion-browser-1.4.0/"
 
-    BANNER_FILE_STR = "css/banner.css"
+    BANNER_FILE_STR = "css/banner.css/"
     BANNER_FILE = os.path.join(BASE_PATH,BROWSER_PATH,BANNER_FILE_STR)
 
-    INDEX_FILE_STR = "index.html"
+    INDEX_FILE_STR = "index.html/"
     INDEX_FILE = os.path.join(BASE_PATH,BROWSER_PATH,INDEX_FILE_STR)
 
     HTML_FILES_LOC = os.path.join(BASE_PATH,BROWSER_PATH)
@@ -63,26 +70,53 @@ def main():
     while True:
         print("1. Continue \n2. Quit\n")
         choice = int(input())
-        if choice < "1" or choice >"2":
-            print("Please choose: ")
-            continue
+        if choice < 1 or choice > 2:
+            print("Please enter a valid selection")
         else:
             break
+    if choice == 2:
+        exit(1)
 
     #write changes
     print("Writing changes")
 
     #change background color
-    subprocess.call(["sed -i 's/background-color.*/background-color: $NEW_COLOR;/' $BANNER_FILE"])
+    BGCOLOR = "/background-color/",NEW_COLOR,";/"
+    for line in fileinput.input(BANNER_FILE, inplace = True):
+        line.replace("/background-color", BGCOLOR)
+    # subprocess.call(["sed -i 's/background-color.*/background-color: $NEW_COLOR;/' $BANNER_FILE"])
 
     #change banner text
-    SEARCH_STR = "\<span class\=security_banner\>"
-    BANNER_TEXT = subprocess.call(["echo $BANNER_TEXT | sed 's/\//\\\//g'"])
+    SEARCH_STR = r"\<span class\=secur: ty_banner\>"
+    #BANNER_TEXT = subprocess.call(["echo $BANNER_TEXT | sed 's/\//\\\//g'"])
+    print(BANNER_TEXT)
+    re.sub(r'''['"\n\\]''', lambda m: '\\{:X} '.format(ord(m.group())), BANNER_TEXT)
+    print(BANNER_TEXT)
 
-    if(int(subprocess.call(["]grep -c '$SEARCH_STR' '$INDEX_FILE'"]))>=1):
-        subprocess.call(["sed -i 's/<span class=security_banner>.*<\/span>/<span class=security_banner>$BANNER_TEXT<\/span>/' $HTML_FILES_LOC/*.html"])
+
+    HTMLSTR = HTML_FILES_LOC,"*.html"
+    BT1 = r"<span class=security_banner>",BANNER_TEXT,r"<\/span>/"
+    BT2 = r"<strong><span class=security_banner>",BANNER_TEXT,r"<\/span><\/strong>/"
+
+    count = 0
+    for line in open(INDEX_FILE):
+        if SEARCH_STR in line:
+            count = count + 1
+
+
+    if(count >= 1):
+        #subprocess.call(["sed -i 's/<span class=security_banner>.*<\/span>/<span class=security_banner>$BANNER_TEXT<\/span>/' $HTML_FILES_LOC/*.html"])
+        with fileinput.FileInput(HTMLSTR, inplace = True, backup='.bak') as file:
+            for line in file:
+                line.replace(r"<span class=security_banner>.*<\/span>",BT1)
     else:
-        subprocess.call(["sed -i 's/<strong>.*<\/strong>/<strong><span class=security_banner>$BANNER_TEXT<\/span><\/strong>/' $HTML_FILES_LOC/8.html"])
+        #subprocess.call(["sed -i 's/<strong>.*<\/strong>/<strong><span class=security_banner>$BANNER_TEXT<\/span><\/strong>/' $HTML_FILES_LOC/*.html"])
+         with fileinput.FileInput(HTMLSTR, inplace = True, backup='.bak') as file:
+            for line in file:
+                line.replace(r"<strong>.*<\/strong>",BT2)
+
+
+
 
 if __name__ == "__main__":
     main()
