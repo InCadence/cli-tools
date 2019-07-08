@@ -3,7 +3,7 @@
 # Script for changing color and txt of security banners 
 # Changes banners loacted here: 
 # /opt/glassfish4/glassfish/domains.ion.applications/ion-browser-<version>/css/banner.css
-# The text for theb anner will asl get changed in every html file that has a banner 
+# The text for the banner will also get changed in every html file that has a banner 
 # which can be found: 
 # /opt/glassfish4/glassfish/domains/ion/applicaitons/ion-browswer-<version>
 
@@ -81,9 +81,9 @@ def main():
     print("Writing changes")
 
     #change background color
-    BGCOLOR = "/background-color/",NEW_COLOR,";/"
+    BGCOLOR = "/background-color: ", NEW_COLOR
     for line in fileinput.input(BANNER_FILE, inplace = True):
-        line.replace("/background-color", BGCOLOR)
+        line.rstrip().replace("/background-color.*/", BGCOLOR)
     # subprocess.call(["sed -i 's/background-color.*/background-color: $NEW_COLOR;/' $BANNER_FILE"])
 
     #change banner text
