@@ -21,7 +21,7 @@ def main():
     else:
         # ok, looking good. let's remove some files
         jsonfile = sys.argv[1]
-        print("Checking File : %s" % jsonfile)
+        print("Checking File : %s\n" % jsonfile)
 
         # json_string = None
 
@@ -29,11 +29,19 @@ def main():
         with open(jsonfile) as f:
             for line in f:
                 try:
-                    json.loads(line)
-                    print("Line " + str(count) + " looks good")
+                    # the json data
+                    data = json.loads(line)
+
+                    # the data in a readable format
+                    parsed = json.dumps(data)
+
+                    # the total number of characters parsed
+                    total_chars = len(parsed)
+
+                    print("  Checking Line %s : %s" % (count, total_chars))
                 except Exception as e:
-                    print("Error at line " + str(count) + ": " + repr(e))
-                    
+                    print("ERROR AT LINE %s : %s" % (count, repr(e)))
+
                 count = count + 1
 
 
