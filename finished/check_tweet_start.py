@@ -24,18 +24,17 @@ def main():
         print("Checking File : %s" % jsonfile)
 
         # json_string = None
-        while True:
-            with open(jsonfile) as f:
-                json_string = f.read()
-            try:
-                parsed_json = json.loads(json_string)
-                formatted_json = json.dumps(parsed_json, indent=4, sort_keys=True)
-                with open(jsonfile, "w") as f:
-                    f.write(formatted_json)
-                print("looks good")
-            except Exception as e:
-                print(repr(e))
-                break
+
+        count = 1
+        with open(jsonfile) as f:
+            for line in f:
+                try:
+                    json.loads(line)
+                    print("Line " + str(count) + " looks good")
+                except Exception as e:
+                    print("Error at line " + str(count) + ": " + repr(e))
+                    
+                count = count + 1
 
 
 if __name__ == "__main__":
