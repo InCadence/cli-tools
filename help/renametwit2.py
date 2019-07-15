@@ -4,9 +4,39 @@ import os
 import sys
 import natsort
 import shutil
+
+### NOTES ###
+#
+#  Let's go over what this script should do:
+#
+#    - we want to take as an input a directory name
+#    - then we want to scan the file names of that directory
+#    - based on the newest and oldest date we want to rename the initial directory
+#    - So the directory "Canada" becomes "Canada-13OCT-20OCT2016"
+#
+#
+#  Two use cases:
+#
+#    - ./renametwit2.py Canada
+#    - ./renametwit2.py /home/shazam/stuff/more_stuff/junk/crud/Canada
+#
+#  In both cases we want the output to be the same
+#
+#
+#  Other thoughts
+#
+#    - when in doubt put lots of print statements in
+#    - seriously, print everything so you can watch how things go
+#    - good job getting hold of the basic algorithm for this
+
+
 def main():
 
-    # gets directory passed from use
+    ################################################################
+    #  Step 1 - Get the directory name
+    ################################################################
+
+    # gets directory passed in
     args = sys.argv
     if len(args) != 2:
         # if we got here then they either entered too many args or not enough
@@ -15,68 +45,107 @@ def main():
         # time to bail
         sys.exit()
     else:
-        # ok, looking good. let's remove some files
+        # ok, looking good. let's rename the directory
         fileinput = sys.argv[1]
         print("Renaming : %s\n" % fileinput)
-    
-    #fileinput = str(input("Please input a directory: "))
-    file_list = os.listdir(fileinput)
 
+    ################################################################
+    #  Step 2 - Get a list of files
+    ################################################################
+    file_list = os.listdir(fileinput)
+    print("Initial File List")
+
+    for file in file_list:
+        print("  %s" % file)
+
+    print("")
+
+    # ????????????????????????????????????????????????????????
+    # I'm not totally sure what you are doing here.
+    # If fileinput is "Canada" what are you trying to split?
 
     # split at the / and keep the first section,
     # replace spaces with _
-    exercise_name = fileinput.split('/')[0]
-    new_exercise_name = exercise_name.replace(" ","_")
+    exercise_name = fileinput.split("/")[0]
+    new_exercise_name = exercise_name.replace(" ", "_")
+    exercise_loc = new_exercise_name
+    # ????????????????????????????????????????????????????????
 
-    execise_loc = new_exercise_name
+    ################################################################
+    #  Step 3 - Sort the files since we want the first and last one
+    ################################################################
+    # sort alphabetically
 
-    #sort alphabetically
-    natsort.natsorted(file_list,reverse = False)
+    # ????????????????????????????????????????????????????????
+    # you are over thinking this, the basic sort will work fine
+    # natsort.natsorted(file_list, reverse=False)
+    # ????????????????????????????????????????????????????????
+
+    file_list.sort()
+
+    print("Sorted File List")
+    for file in file_list:
+        print("  %s" % file)
+
+    ################################################################
+    #  Step 4 - Get the first and last file
+    ################################################################
 
     length = len(file_list)
+    first_file = file_list[0]
+    last_file = file_list[length - 1]
 
-    first = str(file_list[0])
-    last = str(file_list[length - 1])
+    print("")
+    print("first : %s" % first_file)
+    print("last  : %s" % last_file)
+    print("")
 
-    firstdate = first.split('_')[1] # splits and keeps middle,
-    lastdate = last.split('_')[1] # which is the date 
+    ################################################################
+    #  Step 5 - Split it up
+    ################################################################
 
-    firstlist = firstdate.split('-') 
-    lastlist = lastdate.split('-')
+    firstdate = first_file.split("_")[1]  # splits and keeps middle,
+    lastdate = last_file.split("_")[1]  # which is the date
 
+    print("First Date : %s" % firstdate)
+    print("Last Date  : %s" % lastdate)
+    print("")
 
     # dates are seperated date-month-year into an array
-    start_year = firstlist[0]
-    start_month = int(firstlist[1])
+    first_list = firstdate.split("-")
+    last_list = lastdate.split("-")
 
-    if start_month == 1:
-        start_month = "JAN"
-    elif start_month == 2:
-        start_month = "FEB"
-    elif start_month == 3:
-        start_month = "MAR"
-    elif start_month == 4:
-        start_month = "APR"
-    elif start_month == 5:
-        start_month = "MAY"
-    elif start_month == 6:
-        start_month = "JUN"
-    elif start_month == 7:
-        start_month = "JUL"
-    elif start_month == 8:
-        start_month = "AUG"
-    elif start_month == 9:
-        start_month = "SEP"
-    elif start_month == 10:
-        start_month = "OCT"
-    elif start_month == 11:
-        start_month = "NOV"
-    elif start_month == 12:
-        start_month = "DEC"
-    else:
-        start_month = None
+    # let's make a dictionary to make this easier
+    months = {
+        "1": "JAN",
+        "2": "FEB",
+        "3": "MAR",
+        "4": "APR",
+        "5": "MAY",
+        "6": "JUN",
+        "7": "JUL",
+        "8": "AUG",
+        "9": "SEP",
+        "10": "OCT",
+        "11": "NOV",
+        "12": "DEC",
+    }
 
-    start_day = firstlist[2]
+    # now we can just pick out the values from the array
+    start_year = first_list[0]
+    start_month = months[first_list[1]]
+    start_day = first_list[2]
+
+    print("Start Date")
+    print("Year  : %s" % start_year)
+    print("Month : %s" % start_month)
+    print("Day   : %s" % start_day)
+
+    sys.exit()  # <-- remove this to keep testing
+
+    ################################################################
+    #  And you can take it from here. Does this help?
+    ################################################################
 
     # end date
     end_year = lastlist[0]
@@ -111,15 +180,29 @@ def main():
 
     end_day = lastlist[2]
 
-    new_dir_path = os.path.join(new_exercise_name,'-',start_day,'{',start_month,'}','-',end_day,'{',end_month,'}',end_year)
+    new_dir_path = os.path.join(
+        new_exercise_name,
+        "-",
+        start_day,
+        "{",
+        start_month,
+        "}",
+        "-",
+        end_day,
+        "{",
+        end_month,
+        "}",
+        end_year,
+    )
 
-    os.rename(execise_loc, new_dir_path)
+    os.rename(exercise_loc, new_dir_path)
 
-    #change ownership
-    shutil.chown(new_dir_path, user = "glassfish", group = "glassfish")
+    # change ownership
+    shutil.chown(new_dir_path, user="glassfish", group="glassfish")
     for f in new_dir_path:
-        shutil.chown(f, user = "glassfish", group = "glassfish")
+        shutil.chown(f, user="glassfish", group="glassfish")
         os.chmod(f, 0o755)
 
 
-
+if __name__ == "__main__":
+    main()
