@@ -61,10 +61,10 @@ def main():
 
     print("")
 
-
-    new_exercise_name = os.path.basename(fileinput)
+    cleaned_name = os.path.normpath(fileinput)
+    new_exercise_name = os.path.basename(cleaned_name)
     exercise_loc = new_exercise_name
-    print(new_exercise_name)
+    print("New Name : %s" % new_exercise_name)
     print("")
 
     # ????????????????????????????????????????????????????????
@@ -73,12 +73,10 @@ def main():
 
     # split at the / and keep the first section,
     # replace spaces with _
-    #exercise_name = filelist.split("/")[0]
-    #new_exercise_name = exercise_name.replace(" ", "_")
-    #exercise_loc = new_exercise_name
+    # exercise_name = filelist.split("/")[0]
+    # new_exercise_name = exercise_name.replace(" ", "_")
+    # exercise_loc = new_exercise_name
     # ????????????????????????????????????????????????????????
-
-
 
     ################################################################
     #  Step 3 - Sort the files since we want the first and last one
@@ -145,32 +143,43 @@ def main():
     print("Month : %s" % end_month)
     print("Day   : %s" % end_day)
 
-    new_dir_path = (
-        new_exercise_name + 
-        "-" + 
-        start_day + 
-        "{" + 
-        start_month + 
-        "}" + 
-        "-" + 
-        end_day + 
-        "{" + 
-        end_month + 
-        "}" + 
-        end_year
-        )
+    # new_dir_path = (
+    #     new_exercise_name
+    #     + "-"
+    #     + start_day
+    #     + "{"
+    #     + start_month
+    #     + "}"
+    #     + "-"
+    #     + end_day
+    #     + "{"
+    #     + end_month
+    #     + "}"
+    #     + end_year
+    # )
+
+    # much easier way of doing this. each '%s' gets replaced by a variable
+    new_dir_path = "%s-%s%s-%s%s%s" % (
+        new_exercise_name,
+        start_day,
+        start_month,
+        end_day,
+        end_month,
+        end_year,
+    )
 
     print(new_dir_path)
-
     os.rename(exercise_loc, new_dir_path)
 
-    sys.exit(1) ## remove to test below
+    ## remove to test below
+    sys.exit()
+
     uid = pwd.getpwnam("glassfish").pw_uid
     gid = grp.getgrnam("glassfish").gr_gid
-    # change ownership of path 
+    # change ownership of path
     os.chown(new_dir_path, uid, gid)
     os.chmod(new_dir_path, 0o755)
-    # change ownership of files 
+    # change ownership of files
     for f in new_dir_path:
         os.chown(f, uid, gid)
         os.chmod(f, 0o755)
