@@ -2,8 +2,9 @@
 
 import os
 import sys
-import natsort
-import shutil
+import pwd
+import grp
+import calendar
 
 ### NOTES ###
 #
@@ -60,16 +61,24 @@ def main():
 
     print("")
 
+
+    new_exercise_name = os.path.basename(fileinput)
+    exercise_loc = new_exercise_name
+    print(new_exercise_name)
+    print("")
+
     # ????????????????????????????????????????????????????????
     # I'm not totally sure what you are doing here.
     # If fileinput is "Canada" what are you trying to split?
 
     # split at the / and keep the first section,
     # replace spaces with _
-    exercise_name = fileinput.split("/")[0]
-    new_exercise_name = exercise_name.replace(" ", "_")
-    exercise_loc = new_exercise_name
+    #exercise_name = filelist.split("/")[0]
+    #new_exercise_name = exercise_name.replace(" ", "_")
+    #exercise_loc = new_exercise_name
     # ????????????????????????????????????????????????????????
+
+
 
     ################################################################
     #  Step 3 - Sort the files since we want the first and last one
@@ -115,92 +124,55 @@ def main():
     first_list = firstdate.split("-")
     last_list = lastdate.split("-")
 
-    # let's make a dictionary to make this easier
-    months = {
-        "1": "JAN",
-        "2": "FEB",
-        "3": "MAR",
-        "4": "APR",
-        "5": "MAY",
-        "6": "JUN",
-        "7": "JUL",
-        "8": "AUG",
-        "9": "SEP",
-        "10": "OCT",
-        "11": "NOV",
-        "12": "DEC",
-    }
-
     # now we can just pick out the values from the array
     start_year = first_list[0]
-    start_month = months[first_list[1]]
+    start_month = str.upper(calendar.month_abbr[int(first_list[1])])
     start_day = first_list[2]
 
     print("Start Date")
     print("Year  : %s" % start_year)
     print("Month : %s" % start_month)
     print("Day   : %s" % start_day)
-
-    sys.exit()  # <-- remove this to keep testing
-
-    ################################################################
-    #  And you can take it from here. Does this help?
-    ################################################################
+    print("")
 
     # end date
-    end_year = lastlist[0]
-    end_month = int(lastlist[1])
+    end_year = last_list[0]
+    end_month = start_month = str.upper(calendar.month_abbr[int(last_list[1])])
+    end_day = last_list[2]
 
-    if end_month == 1:
-        end_month = "JAN"
-    elif end_month == 2:
-        end_month = "FEB"
-    elif end_month == 3:
-        end_month = "MAR"
-    elif end_month == 4:
-        end_month = "APR"
-    elif end_month == 5:
-        end_month = "MAY"
-    elif end_month == 6:
-        end_month = "JUN"
-    elif end_month == 7:
-        end_month = "JUL"
-    elif end_month == 8:
-        end_month = "AUG"
-    elif end_month == 9:
-        end_month = "SEP"
-    elif end_month == 10:
-        end_month = "OCT"
-    elif end_month == 11:
-        end_month = "NOV"
-    elif end_month == 12:
-        end_month = "DEC"
-    else:
-        end_month = None
+    print("End Date")
+    print("Year  : %s" % end_year)
+    print("Month : %s" % end_month)
+    print("Day   : %s" % end_day)
 
-    end_day = lastlist[2]
+    new_dir_path = (
+        new_exercise_name + 
+        "-" + 
+        start_day + 
+        "{" + 
+        start_month + 
+        "}" + 
+        "-" + 
+        end_day + 
+        "{" + 
+        end_month + 
+        "}" + 
+        end_year
+        )
 
-    new_dir_path = os.path.join(
-        new_exercise_name,
-        "-",
-        start_day,
-        "{",
-        start_month,
-        "}",
-        "-",
-        end_day,
-        "{",
-        end_month,
-        "}",
-        end_year,
-    )
+    print(new_dir_path)
 
     os.rename(exercise_loc, new_dir_path)
 
-    # change ownership
-    shutil.chown(new_dir_path, user="glassfish", group="glassfish")
+    sys.exit(1) ## remove to test below
+    uid = pwd.getpwnam("glassfish").pw_uid
+    gid = grp.getgrnam("glassfish").gr_gid
+    # change ownership of path 
+    os.chown(new_dir_path, uid, gid)
+    os.chmod(new_dir_path, 0o755)
+    # change ownership of files 
     for f in new_dir_path:
-        shutil.chown(f, user="glassfish", group="glassfish")
+        os.chown(f, uid, gid)
         os.chmod(f, 0o755)
 
 
