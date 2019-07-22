@@ -70,7 +70,7 @@ def main():
     ################################################################
     #  Step 3 - Sort the files since we want the first and last one
     ################################################################
-    
+
     # sort alphabetically
     file_list.sort()
 
@@ -137,7 +137,6 @@ def main():
         end_year,
     )
 
-
     ################################################################
     #  Step 6 - Change directory name and permissions
     ################################################################
@@ -145,9 +144,8 @@ def main():
     print(new_dir_path)
     os.rename(exercise_loc, new_dir_path)
 
-    ## Comment this out unless the computer has a user named glassfish, 
+    ## Comment this out unless the computer has a user named glassfish,
     # this won't change because permissions wont change unless glassfish exists.
-    sys.exit()
 
     uid = pwd.getpwnam("glassfish").pw_uid
     gid = grp.getgrnam("glassfish").gr_gid
