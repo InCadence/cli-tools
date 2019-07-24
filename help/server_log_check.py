@@ -7,8 +7,7 @@ import pprint
 from decimal import *
 
 def main():
-    # redirect to txt
-    sys.stdout = open("log_output.txt", "w")
+    original = sys.stdout
 
     if os.geteuid() == 0:
         print("Running as root.")
@@ -28,6 +27,10 @@ def main():
         fileinput = sys.argv[1]
         print("Checking: %s\n" % fileinput)
     
+    
+    # redirect to txt
+    sys.stdout = open("log_output.txt", "w")
+
     file_list = os.listdir(fileinput)
 
     file_list.sort()
@@ -35,7 +38,7 @@ def main():
     if os.path.isfile(os.path.join(fileinput, 'Store.DS')):
         os.remove(os.path.join(fileinput, 'Store.DS'))
 
-    # renames files so the script can process them
+    #renames files so the script can process them
     # renames given testfile format only server.log_2019-07-21-123456
     print("Renaming: ")
     for f in file_list:
@@ -60,7 +63,6 @@ def main():
 
     total_count = []
     mydict = {}
-    
     total_error_list = []
     total_err_nodup = []
 
@@ -169,6 +171,12 @@ def main():
     
     print("%s average errors per file for %s files" % (avg, dirlen))
     print("%s total errors" % sum(total_count))
+
+    sys.stdout = original
+
+    print("Done processings all files!")
+    print("Data written to output_log")
+
 
 
 if __name__ == "__main__":
