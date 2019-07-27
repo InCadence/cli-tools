@@ -1,58 +1,30 @@
 #!/usr/bin/env python
 
+# Script for renaming the twitter json directory
+# Run this script while passing a directory that
+# needs to be renamed. changes ownership of files 
+# to glassfish.
+
 import os
 import sys
 import pwd
 import grp
 import calendar
 
-### NOTES ###
-#
-#  Let's go over what this script should do:
-#
-#    - we want to take as an input a directory name
-#    - then we want to scan the file names of that directory
-#    - based on the newest and oldest date we want to rename the initial directory
-#    - So the directory "Canada" becomes "Canada-13OCT-20OCT2016"
-#
-#
-#  Two use cases:
-#
-#    - ./renametwit2.py Canada
-#    - ./renametwit2.py /home/shazam/stuff/more_stuff/junk/crud/Canada
-#
-#  In both cases we want the output to be the same
-#
-#
-#  Other thoughts
-#
-#    - when in doubt put lots of print statements in
-#    - seriously, print everything so you can watch how things go
-#    - good job getting hold of the basic algorithm for this
-
-
 def main():
 
-    ################################################################
-    #  Step 1 - Get the directory name
-    ################################################################
-
-    # gets directory passed in
+    # directory passed in
     args = sys.argv
     if len(args) != 2:
         # if we got here then they either entered too many args or not enough
         print("You must supply a directory to rename")
-
-        # time to bail
+        # bail
         sys.exit()
     else:
-        # ok, looking good. let's rename the directory
+        # rename the directory
         fileinput = sys.argv[1]
         print("Renaming : %s\n" % fileinput)
 
-    ################################################################
-    #  Step 2 - Get a list of files
-    ################################################################
     file_list = os.listdir(fileinput)
     print("Initial File List")
 
@@ -67,20 +39,12 @@ def main():
     print("New Name : %s" % new_exercise_name)
     print("")
 
-    ################################################################
-    #  Step 3 - Sort the files since we want the first and last one
-    ################################################################
-
     # sort alphabetically
     file_list.sort()
 
     print("Sorted File List")
     for file in file_list:
         print("  %s" % file)
-
-    ################################################################
-    #  Step 4 - Get the first and last file
-    ################################################################
 
     length = len(file_list)
     first_file = file_list[0]
@@ -90,10 +54,6 @@ def main():
     print("first : %s" % first_file)
     print("last  : %s" % last_file)
     print("")
-
-    ################################################################
-    #  Step 5 - Split it up
-    ################################################################
 
     firstdate = first_file.split("_")[1]  # splits and keeps middle,
     lastdate = last_file.split("_")[1]  # which is the date
@@ -106,7 +66,7 @@ def main():
     first_list = firstdate.split("-")
     last_list = lastdate.split("-")
 
-    # now we can just pick out the values from the array
+    # pick out vals from array
     start_year = first_list[0]
     start_month = str.upper(calendar.month_abbr[int(first_list[1])])
     start_day = first_list[2]
@@ -127,7 +87,6 @@ def main():
     print("Month : %s" % end_month)
     print("Day   : %s" % end_day)
 
-    # much easier way of doing this. each '%s' gets replaced by a variable
     new_dir_path = "%s-%s%s-%s%s%s" % (
         new_exercise_name,
         start_day,
@@ -137,15 +96,8 @@ def main():
         end_year,
     )
 
-    ################################################################
-    #  Step 6 - Change directory name and permissions
-    ################################################################
-
     print(new_dir_path)
     os.rename(exercise_loc, new_dir_path)
-
-    ## Comment this out unless the computer has a user named glassfish,
-    # this won't change because permissions wont change unless glassfish exists.
 
     uid = pwd.getpwnam("glassfish").pw_uid
     gid = grp.getgrnam("glassfish").gr_gid
